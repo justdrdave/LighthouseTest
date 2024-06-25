@@ -1,0 +1,40 @@
+# Build NodeJS Express app using Azure Pipelines
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript?view=vsts
+
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - master
+  paths:
+    exclude:
+    - Readme.md
+
+workspace:
+    clean: all 
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '12.x'
+  
+- task: Npm@1
+  displayName: 'npm install'
+  inputs:
+    command: install
+
+- task: CmdLine@2
+  displayName: 'npm test'
+  inputs:
+    script: set "environment=app-preprod" && npm run test
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: report'
+  inputs:
+    PathtoPublish: report
+    ArtifactName: report
+  condition: succeededOrFailed()
